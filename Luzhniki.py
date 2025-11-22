@@ -133,13 +133,17 @@ def get_user_subscriptions(user_id: int) -> List[Dict[str, Any]]:
 
 def format_match_time(utc_iso: str) -> str:
     """
-    Конвертирует ISO-время UTC (2025-11-24T20:00:00Z) в локальное время сервера
-    и форматирует как ДД.ММ.ГГГГ ЧЧ:ММ.
+    Конвертирует ISO-время UTC (2025-11-24T20:00:00Z)
+    во время по Москве (UTC+3) и форматирует как ДД.ММ.ГГГГ ЧЧ:ММ (по МСК).
     """
     try:
+        # парсим время как UTC
         dt_utc = datetime.fromisoformat(utc_iso.replace("Z", "+00:00"))
-        dt_local = dt_utc.astimezone()  # локальный TZ машины
-        return dt_local.strftime("%d.%m.%Y %H:%M")
+
+        # Москва всегда UTC+3, без летнего времени. [web:109]
+        dt_msk = dt_utc + timedelta(hours=3)
+
+        return dt_msk.strftime("%d.%m.%Y %H:%M") + " (по МСК)"
     except Exception:
         return utc_iso
 
