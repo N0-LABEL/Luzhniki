@@ -246,25 +246,39 @@ async def fetch_live_fixtures(session: aiohttp.ClientSession) -> List[Dict[str, 
 
 async def fetch_upcoming_fixtures_for_channel(session: aiohttp.ClientSession) -> List[Dict[str, Any]]:
     """
-    Ближайшие SCHEDULED-матчи по отслеживаемым турнирам за 3 дня. [web:54]
+    Ближайшие матчи по отслеживаемым турнирам за 7 дней.
+    Берём ВСЕ статусы (SCHEDULED, TIMED и т.д.) и уже по дате ограничиваем. [web:51][web:54]
     """
     fixtures: List[Dict[str, Any]] = []
+
     today = datetime.now(timezone.utc).date()
     date_from = today.isoformat()
-    date_to = (today + timedelta(days=3)).isoformat()
+    date_to = (today + timedelta(days=7)).isoformat()
 
     for code in COMPETITIONS_TRACKED.keys():
         url = f"{FOOTBALL_DATA_BASE}/competitions/{code}/matches"
         params = {
-            "status": "SCHEDULED",
+            # статус НЕ фильтруем, иначе TIMED-матчи пропадают
             "dateFrom": date_from,
             "dateTo": date_to,
         }
         async with session.get(url, params=params, headers=football_headers()) as resp:
             data = await resp.json()
+
+        if resp.status == 429:
+            print(f"[upcoming] Рейтлимит 429 для {code}: {data}")
+            break
+
+        if resp.status != 200:
+            print(f"[upcoming] Ошибка {resp.status} для {code}: {data}")
+            continue
+
         fixtures.extend(data.get("matches", []))
 
+    # На всякий случай сортируем по времени
     fixtures.sort(key=lambda m: m.get("utcDate", ""))
+
+    print(f"[upcoming] Найдено матчей: {len(fixtures)}")
     return fixtures
 
 
