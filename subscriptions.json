@@ -1,0 +1,23 @@
+{
+  "users": {
+    "595160552758706187": {
+      "teams": [
+        {
+          "team_id": 57,
+          "team_name": "Arsenal FC",
+          "league": "UEFA Champions League"
+        },
+        {
+          "team_id": 64,
+          "team_name": "Liverpool FC",
+          "league": "Premier League"
+        },
+        {
+          "team_id": 671,
+          "team_name": "Heracles Almelo",
+          "league": "Eredivisie"
+        }
+      ]
+    }
+  }
+}
