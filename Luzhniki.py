@@ -27,7 +27,7 @@ DISCORD_TOKEN = ""
 FOOTBALL_DATA_TOKEN = ""
 
 GUILD_ID = 1225075859333845154          # ID сервера
-TEXT_CHANNEL_ID = 1299347859828903977   # ID текстового канала
+TEXT_CHANNEL_ID = 1407445373571563610   # ID текстового канала
 VOICE_CHANNEL_ID = 1289694911234310155  # ID голосового канала
 
 FOOTBALL_DATA_BASE = "https://api.football-data.org/v4"  # v4 API [web:54]
@@ -203,11 +203,10 @@ async def build_teams_cache(session: aiohttp.ClientSession):
 async def search_team(session: aiohttp.ClientSession, query: str) -> Optional[Dict[str, Any]]:
     """
     Ищет команду по названию среди команд отслеживаемых турниров. [web:54]
+    Использует уже построенный TEAMS_CACHE, не ходит сам в API.
     """
-    await build_teams_cache(session)
-
     if not TEAMS_CACHE:
-        print("[search_team] TEAMS_CACHE пуст — проверь токен и доступные лиги в кабинете football-data.org")
+        print("[search_team] TEAMS_CACHE пуст — кэш команд ещё не построен или API не вернул данные.")
         return None
 
     q = query.lower().strip()
@@ -227,6 +226,7 @@ async def search_team(session: aiohttp.ClientSession, query: str) -> Optional[Di
             return info
 
     return None
+
 
 
 async def fetch_live_fixtures(session: aiohttp.ClientSession) -> List[Dict[str, Any]]:
@@ -280,6 +280,7 @@ async def fetch_upcoming_fixtures_for_channel(session: aiohttp.ClientSession) ->
 
     print(f"[upcoming] Найдено матчей: {len(fixtures)}")
     return fixtures
+
 
 
 def normalize_league_input(league_name: str) -> Optional[str]:
@@ -849,7 +850,12 @@ async def on_ready():
     await bot.wait_until_ready()
     await bot.change_presence(activity=discord.Game(name="Футбол (football-data.org)"))
 
+    # Подключиться к войс-каналу
     await ensure_voice_connected()
+
+    # Прогреть кэш команд ОДИН РАЗ при запуске
+    async with aiohttp.ClientSession() as session:
+        await build_teams_cache(session)
 
     guild = discord.Object(id=GUILD_ID)
     bot.tree.copy_global_to(guild=guild)
@@ -857,6 +863,7 @@ async def on_ready():
 
     if not poll_live_matches.is_running():
         poll_live_matches.start()
+
 
 
 if __name__ == "__main__":
