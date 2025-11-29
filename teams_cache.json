@@ -1,0 +1,1343 @@
+{
+  "_timestamp": "2025-11-29T11:56:32.219615",
+  "teams": {
+    "argentina": {
+      "team_id": 762,
+      "team_name": "Argentina",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "brazil": {
+      "team_id": 764,
+      "team_name": "Brazil",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "japan": {
+      "team_id": 766,
+      "team_name": "Japan",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "mexico": {
+      "team_id": 769,
+      "team_name": "Mexico",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "united states": {
+      "team_id": 771,
+      "team_name": "United States",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "south korea": {
+      "team_id": 772,
+      "team_name": "South Korea",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "australia": {
+      "team_id": 779,
+      "team_name": "Australia",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "new zealand": {
+      "team_id": 783,
+      "team_name": "New Zealand",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "ecuador": {
+      "team_id": 791,
+      "team_name": "Ecuador",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "canada": {
+      "team_id": 828,
+      "team_name": "Canada",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "iran": {
+      "team_id": 840,
+      "team_name": "Iran",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "jordan": {
+      "team_id": 8049,
+      "team_name": "Jordan",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "uzbekistan": {
+      "team_id": 8070,
+      "team_name": "Uzbekistan",
+      "league_code": "WC",
+      "league_name": "FIFA World Cup"
+    },
+    "bayer 04 leverkusen": {
+      "team_id": 3,
+      "team_name": "Bayer 04 Leverkusen",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "borussia dortmund": {
+      "team_id": 4,
+      "team_name": "Borussia Dortmund",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "fc bayern münchen": {
+      "team_id": 5,
+      "team_name": "FC Bayern München",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "eintracht frankfurt": {
+      "team_id": 19,
+      "team_name": "Eintracht Frankfurt",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "arsenal fc": {
+      "team_id": 57,
+      "team_name": "Arsenal FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "chelsea fc": {
+      "team_id": 61,
+      "team_name": "Chelsea FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "liverpool fc": {
+      "team_id": 64,
+      "team_name": "Liverpool FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "manchester city fc": {
+      "team_id": 65,
+      "team_name": "Manchester City FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "newcastle united fc": {
+      "team_id": 67,
+      "team_name": "Newcastle United FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "tottenham hotspur fc": {
+      "team_id": 73,
+      "team_name": "Tottenham Hotspur FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "athletic club": {
+      "team_id": 77,
+      "team_name": "Athletic Club",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "club atlético de madrid": {
+      "team_id": 78,
+      "team_name": "Club Atlético de Madrid",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "fc barcelona": {
+      "team_id": 81,
+      "team_name": "FC Barcelona",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "real madrid cf": {
+      "team_id": 86,
+      "team_name": "Real Madrid CF",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "villarreal cf": {
+      "team_id": 94,
+      "team_name": "Villarreal CF",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "atalanta bc": {
+      "team_id": 102,
+      "team_name": "Atalanta BC",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "fc internazionale milano": {
+      "team_id": 108,
+      "team_name": "FC Internazionale Milano",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "juventus fc": {
+      "team_id": 109,
+      "team_name": "Juventus FC",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "ssc napoli": {
+      "team_id": 113,
+      "team_name": "SSC Napoli",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "sporting clube de portugal": {
+      "team_id": 498,
+      "team_name": "Sporting Clube de Portugal",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "olympique de marseille": {
+      "team_id": 516,
+      "team_name": "Olympique de Marseille",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "paris saint-germain fc": {
+      "team_id": 524,
+      "team_name": "Paris Saint-Germain FC",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "as monaco fc": {
+      "team_id": 548,
+      "team_name": "AS Monaco FC",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "galatasaray sk": {
+      "team_id": 610,
+      "team_name": "Galatasaray SK",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "qarabağ ağdam fk": {
+      "team_id": 611,
+      "team_name": "Qarabağ Ağdam FK",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "pae olympiakos sfp": {
+      "team_id": 654,
+      "team_name": "PAE Olympiakos SFP",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "psv": {
+      "team_id": 674,
+      "team_name": "PSV",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "afc ajax": {
+      "team_id": 678,
+      "team_name": "AFC Ajax",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "club brugge kv": {
+      "team_id": 851,
+      "team_name": "Club Brugge KV",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "sk slavia praha": {
+      "team_id": 930,
+      "team_name": "SK Slavia Praha",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "fc københavn": {
+      "team_id": 1876,
+      "team_name": "FC København",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "sport lisboa e benfica": {
+      "team_id": 1903,
+      "team_name": "Sport Lisboa e Benfica",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "royale union saint-gilloise": {
+      "team_id": 3929,
+      "team_name": "Royale Union Saint-Gilloise",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "fk bodø/glimt": {
+      "team_id": 5721,
+      "team_name": "FK Bodø/Glimt",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "fk kairat": {
+      "team_id": 10601,
+      "team_name": "FK Kairat",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "paphos fc": {
+      "team_id": 11034,
+      "team_name": "Paphos FC",
+      "league_code": "CL",
+      "league_name": "UEFA Champions League"
+    },
+    "1. fc köln": {
+      "team_id": 1,
+      "team_name": "1. FC Köln",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "tsg 1899 hoffenheim": {
+      "team_id": 2,
+      "team_name": "TSG 1899 Hoffenheim",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "hamburger sv": {
+      "team_id": 7,
+      "team_name": "Hamburger SV",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "vfb stuttgart": {
+      "team_id": 10,
+      "team_name": "VfB Stuttgart",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "vfl wolfsburg": {
+      "team_id": 11,
+      "team_name": "VfL Wolfsburg",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "sv werder bremen": {
+      "team_id": 12,
+      "team_name": "SV Werder Bremen",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "1. fsv mainz 05": {
+      "team_id": 15,
+      "team_name": "1. FSV Mainz 05",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "fc augsburg": {
+      "team_id": 16,
+      "team_name": "FC Augsburg",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "sc freiburg": {
+      "team_id": 17,
+      "team_name": "SC Freiburg",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "borussia mönchengladbach": {
+      "team_id": 18,
+      "team_name": "Borussia Mönchengladbach",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "fc st. pauli 1910": {
+      "team_id": 20,
+      "team_name": "FC St. Pauli 1910",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "1. fc union berlin": {
+      "team_id": 28,
+      "team_name": "1. FC Union Berlin",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "1. fc heidenheim 1846": {
+      "team_id": 44,
+      "team_name": "1. FC Heidenheim 1846",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "rb leipzig": {
+      "team_id": 721,
+      "team_name": "RB Leipzig",
+      "league_code": "BL1",
+      "league_name": "Bundesliga"
+    },
+    "fc twente '65": {
+      "team_id": 666,
+      "team_name": "FC Twente '65",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "sbv excelsior": {
+      "team_id": 670,
+      "team_name": "SBV Excelsior",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "heracles almelo": {
+      "team_id": 671,
+      "team_name": "Heracles Almelo",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "sc heerenveen": {
+      "team_id": 673,
+      "team_name": "SC Heerenveen",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "feyenoord rotterdam": {
+      "team_id": 675,
+      "team_name": "Feyenoord Rotterdam",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "fc utrecht": {
+      "team_id": 676,
+      "team_name": "FC Utrecht",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "fc groningen": {
+      "team_id": 677,
+      "team_name": "FC Groningen",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "nac breda": {
+      "team_id": 681,
+      "team_name": "NAC Breda",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "az": {
+      "team_id": 682,
+      "team_name": "AZ",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "pec zwolle": {
+      "team_id": 684,
+      "team_name": "PEC Zwolle",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "go ahead eagles": {
+      "team_id": 718,
+      "team_name": "Go Ahead Eagles",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "telstar 1963": {
+      "team_id": 1912,
+      "team_name": "Telstar 1963",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "nec": {
+      "team_id": 1915,
+      "team_name": "NEC",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "fc volendam": {
+      "team_id": 1919,
+      "team_name": "FC Volendam",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "fortuna sittard": {
+      "team_id": 1920,
+      "team_name": "Fortuna Sittard",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "sparta rotterdam": {
+      "team_id": 6806,
+      "team_name": "Sparta Rotterdam",
+      "league_code": "DED",
+      "league_name": "Eredivisie"
+    },
+    "fluminense fc": {
+      "team_id": 1765,
+      "team_name": "Fluminense FC",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "ca mineiro": {
+      "team_id": 1766,
+      "team_name": "CA Mineiro",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "grêmio fbpa": {
+      "team_id": 1767,
+      "team_name": "Grêmio FBPA",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "se palmeiras": {
+      "team_id": 1769,
+      "team_name": "SE Palmeiras",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "botafogo fr": {
+      "team_id": 1770,
+      "team_name": "Botafogo FR",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "cruzeiro ec": {
+      "team_id": 1771,
+      "team_name": "Cruzeiro EC",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "são paulo fc": {
+      "team_id": 1776,
+      "team_name": "São Paulo FC",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "ec bahia": {
+      "team_id": 1777,
+      "team_name": "EC Bahia",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "sc recife": {
+      "team_id": 1778,
+      "team_name": "SC Recife",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "sc corinthians paulista": {
+      "team_id": 1779,
+      "team_name": "SC Corinthians Paulista",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "cr vasco da gama": {
+      "team_id": 1780,
+      "team_name": "CR Vasco da Gama",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "ec vitória": {
+      "team_id": 1782,
+      "team_name": "EC Vitória",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "cr flamengo": {
+      "team_id": 1783,
+      "team_name": "CR Flamengo",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "ceará sc": {
+      "team_id": 1837,
+      "team_name": "Ceará SC",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "fortaleza ec": {
+      "team_id": 3984,
+      "team_name": "Fortaleza EC",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "ec juventude": {
+      "team_id": 4245,
+      "team_name": "EC Juventude",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "rb bragantino": {
+      "team_id": 4286,
+      "team_name": "RB Bragantino",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "mirassol fc": {
+      "team_id": 4364,
+      "team_name": "Mirassol FC",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "sc internacional": {
+      "team_id": 6684,
+      "team_name": "SC Internacional",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "santos fc": {
+      "team_id": 6685,
+      "team_name": "Santos FC",
+      "league_code": "BSA",
+      "league_name": "Campeonato Brasileiro Série A"
+    },
+    "ca osasuna": {
+      "team_id": 79,
+      "team_name": "CA Osasuna",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "rcd espanyol de barcelona": {
+      "team_id": 80,
+      "team_name": "RCD Espanyol de Barcelona",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "getafe cf": {
+      "team_id": 82,
+      "team_name": "Getafe CF",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "rayo vallecano de madrid": {
+      "team_id": 87,
+      "team_name": "Rayo Vallecano de Madrid",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "levante ud": {
+      "team_id": 88,
+      "team_name": "Levante UD",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "rcd mallorca": {
+      "team_id": 89,
+      "team_name": "RCD Mallorca",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "real betis balompié": {
+      "team_id": 90,
+      "team_name": "Real Betis Balompié",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "real sociedad de fútbol": {
+      "team_id": 92,
+      "team_name": "Real Sociedad de Fútbol",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "valencia cf": {
+      "team_id": 95,
+      "team_name": "Valencia CF",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "deportivo alavés": {
+      "team_id": 263,
+      "team_name": "Deportivo Alavés",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "elche cf": {
+      "team_id": 285,
+      "team_name": "Elche CF",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "girona fc": {
+      "team_id": 298,
+      "team_name": "Girona FC",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "rc celta de vigo": {
+      "team_id": 558,
+      "team_name": "RC Celta de Vigo",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "sevilla fc": {
+      "team_id": 559,
+      "team_name": "Sevilla FC",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "real oviedo": {
+      "team_id": 1048,
+      "team_name": "Real Oviedo",
+      "league_code": "PD",
+      "league_name": "Primera Division"
+    },
+    "toulouse fc": {
+      "team_id": 511,
+      "team_name": "Toulouse FC",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "stade brestois 29": {
+      "team_id": 512,
+      "team_name": "Stade Brestois 29",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "aj auxerre": {
+      "team_id": 519,
+      "team_name": "AJ Auxerre",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "lille osc": {
+      "team_id": 521,
+      "team_name": "Lille OSC",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "ogc nice": {
+      "team_id": 522,
+      "team_name": "OGC Nice",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "olympique lyonnais": {
+      "team_id": 523,
+      "team_name": "Olympique Lyonnais",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "fc lorient": {
+      "team_id": 525,
+      "team_name": "FC Lorient",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "stade rennais fc 1901": {
+      "team_id": 529,
+      "team_name": "Stade Rennais FC 1901",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "angers sco": {
+      "team_id": 532,
+      "team_name": "Angers SCO",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "le havre ac": {
+      "team_id": 533,
+      "team_name": "Le Havre AC",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "fc nantes": {
+      "team_id": 543,
+      "team_name": "FC Nantes",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "fc metz": {
+      "team_id": 545,
+      "team_name": "FC Metz",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "racing club de lens": {
+      "team_id": 546,
+      "team_name": "Racing Club de Lens",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "rc strasbourg alsace": {
+      "team_id": 576,
+      "team_name": "RC Strasbourg Alsace",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "paris fc": {
+      "team_id": 1045,
+      "team_name": "Paris FC",
+      "league_code": "FL1",
+      "league_name": "Ligue 1"
+    },
+    "blackburn rovers fc": {
+      "team_id": 59,
+      "team_name": "Blackburn Rovers FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "norwich city fc": {
+      "team_id": 68,
+      "team_name": "Norwich City FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "queens park rangers fc": {
+      "team_id": 69,
+      "team_name": "Queens Park Rangers FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "stoke city fc": {
+      "team_id": 70,
+      "team_name": "Stoke City FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "swansea city afc": {
+      "team_id": 72,
+      "team_name": "Swansea City AFC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "west bromwich albion fc": {
+      "team_id": 74,
+      "team_name": "West Bromwich Albion FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "hull city afc": {
+      "team_id": 322,
+      "team_name": "Hull City AFC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "portsmouth fc": {
+      "team_id": 325,
+      "team_name": "Portsmouth FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "birmingham city fc": {
+      "team_id": 332,
+      "team_name": "Birmingham City FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "leicester city fc": {
+      "team_id": 338,
+      "team_name": "Leicester City FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "southampton fc": {
+      "team_id": 340,
+      "team_name": "Southampton FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "derby county fc": {
+      "team_id": 342,
+      "team_name": "Derby County FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "middlesbrough fc": {
+      "team_id": 343,
+      "team_name": "Middlesbrough FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "sheffield wednesday fc": {
+      "team_id": 345,
+      "team_name": "Sheffield Wednesday FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "watford fc": {
+      "team_id": 346,
+      "team_name": "Watford FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "charlton athletic fc": {
+      "team_id": 348,
+      "team_name": "Charlton Athletic FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "ipswich town fc": {
+      "team_id": 349,
+      "team_name": "Ipswich Town FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "sheffield united fc": {
+      "team_id": 356,
+      "team_name": "Sheffield United FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "millwall fc": {
+      "team_id": 384,
+      "team_name": "Millwall FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "bristol city fc": {
+      "team_id": 387,
+      "team_name": "Bristol City FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "wrexham afc": {
+      "team_id": 404,
+      "team_name": "Wrexham AFC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "coventry city fc": {
+      "team_id": 1076,
+      "team_name": "Coventry City FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "preston north end fc": {
+      "team_id": 1081,
+      "team_name": "Preston North End FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "oxford united fc": {
+      "team_id": 1082,
+      "team_name": "Oxford United FC",
+      "league_code": "ELC",
+      "league_name": "Championship"
+    },
+    "rio ave fc": {
+      "team_id": 496,
+      "team_name": "Rio Ave FC",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "fc porto": {
+      "team_id": 503,
+      "team_name": "FC Porto",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "gd estoril praia": {
+      "team_id": 582,
+      "team_name": "GD Estoril Praia",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "moreirense fc": {
+      "team_id": 583,
+      "team_name": "Moreirense FC",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "fc arouca": {
+      "team_id": 712,
+      "team_name": "FC Arouca",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "cd tondela": {
+      "team_id": 1049,
+      "team_name": "CD Tondela",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "cd nacional": {
+      "team_id": 5529,
+      "team_name": "CD Nacional",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "cd santa clara": {
+      "team_id": 5530,
+      "team_name": "CD Santa Clara",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "fc famalicão": {
+      "team_id": 5531,
+      "team_name": "FC Famalicão",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "gil vicente fc": {
+      "team_id": 5533,
+      "team_name": "Gil Vicente FC",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "vitória sc": {
+      "team_id": 5543,
+      "team_name": "Vitória SC",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "sporting clube de braga": {
+      "team_id": 5613,
+      "team_name": "Sporting Clube de Braga",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "casa pia ac": {
+      "team_id": 6618,
+      "team_name": "Casa Pia AC",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "fc alverca": {
+      "team_id": 7822,
+      "team_name": "FC Alverca",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "cf estrela da amadora": {
+      "team_id": 9136,
+      "team_name": "CF Estrela da Amadora",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "avs": {
+      "team_id": 10340,
+      "team_name": "AVS",
+      "league_code": "PPL",
+      "league_name": "Primeira Liga"
+    },
+    "germany": {
+      "team_id": 759,
+      "team_name": "Germany",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "spain": {
+      "team_id": 760,
+      "team_name": "Spain",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "portugal": {
+      "team_id": 765,
+      "team_name": "Portugal",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "slovakia": {
+      "team_id": 768,
+      "team_name": "Slovakia",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "england": {
+      "team_id": 770,
+      "team_name": "England",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "france": {
+      "team_id": 773,
+      "team_name": "France",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "slovenia": {
+      "team_id": 777,
+      "team_name": "Slovenia",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "serbia": {
+      "team_id": 780,
+      "team_name": "Serbia",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "denmark": {
+      "team_id": 782,
+      "team_name": "Denmark",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "italy": {
+      "team_id": 784,
+      "team_name": "Italy",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "switzerland": {
+      "team_id": 788,
+      "team_name": "Switzerland",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "ukraine": {
+      "team_id": 790,
+      "team_name": "Ukraine",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "poland": {
+      "team_id": 794,
+      "team_name": "Poland",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "czechia": {
+      "team_id": 798,
+      "team_name": "Czechia",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "croatia": {
+      "team_id": 799,
+      "team_name": "Croatia",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "turkey": {
+      "team_id": 803,
+      "team_name": "Turkey",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "belgium": {
+      "team_id": 805,
+      "team_name": "Belgium",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "romania": {
+      "team_id": 811,
+      "team_name": "Romania",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "austria": {
+      "team_id": 816,
+      "team_name": "Austria",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "hungary": {
+      "team_id": 827,
+      "team_name": "Hungary",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "albania": {
+      "team_id": 1065,
+      "team_name": "Albania",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "georgia": {
+      "team_id": 1978,
+      "team_name": "Georgia",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "netherlands": {
+      "team_id": 8601,
+      "team_name": "Netherlands",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "scotland": {
+      "team_id": 8873,
+      "team_name": "Scotland",
+      "league_code": "EC",
+      "league_name": "European Championship"
+    },
+    "ac milan": {
+      "team_id": 98,
+      "team_name": "AC Milan",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "acf fiorentina": {
+      "team_id": 99,
+      "team_name": "ACF Fiorentina",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "as roma": {
+      "team_id": 100,
+      "team_name": "AS Roma",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "bologna fc 1909": {
+      "team_id": 103,
+      "team_name": "Bologna FC 1909",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "cagliari calcio": {
+      "team_id": 104,
+      "team_name": "Cagliari Calcio",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "genoa cfc": {
+      "team_id": 107,
+      "team_name": "Genoa CFC",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "ss lazio": {
+      "team_id": 110,
+      "team_name": "SS Lazio",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "parma calcio 1913": {
+      "team_id": 112,
+      "team_name": "Parma Calcio 1913",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "udinese calcio": {
+      "team_id": 115,
+      "team_name": "Udinese Calcio",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "hellas verona fc": {
+      "team_id": 450,
+      "team_name": "Hellas Verona FC",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "us cremonese": {
+      "team_id": 457,
+      "team_name": "US Cremonese",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "us sassuolo calcio": {
+      "team_id": 471,
+      "team_name": "US Sassuolo Calcio",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "ac pisa 1909": {
+      "team_id": 487,
+      "team_name": "AC Pisa 1909",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "torino fc": {
+      "team_id": 586,
+      "team_name": "Torino FC",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "us lecce": {
+      "team_id": 5890,
+      "team_name": "US Lecce",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "como 1907": {
+      "team_id": 7397,
+      "team_name": "Como 1907",
+      "league_code": "SA",
+      "league_name": "Serie A"
+    },
+    "aston villa fc": {
+      "team_id": 58,
+      "team_name": "Aston Villa FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "everton fc": {
+      "team_id": 62,
+      "team_name": "Everton FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "fulham fc": {
+      "team_id": 63,
+      "team_name": "Fulham FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "manchester united fc": {
+      "team_id": 66,
+      "team_name": "Manchester United FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "sunderland afc": {
+      "team_id": 71,
+      "team_name": "Sunderland AFC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "wolverhampton wanderers fc": {
+      "team_id": 76,
+      "team_name": "Wolverhampton Wanderers FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "burnley fc": {
+      "team_id": 328,
+      "team_name": "Burnley FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "leeds united fc": {
+      "team_id": 341,
+      "team_name": "Leeds United FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "nottingham forest fc": {
+      "team_id": 351,
+      "team_name": "Nottingham Forest FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "crystal palace fc": {
+      "team_id": 354,
+      "team_name": "Crystal Palace FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "brighton & hove albion fc": {
+      "team_id": 397,
+      "team_name": "Brighton & Hove Albion FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "brentford fc": {
+      "team_id": 402,
+      "team_name": "Brentford FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "west ham united fc": {
+      "team_id": 563,
+      "team_name": "West Ham United FC",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    },
+    "afc bournemouth": {
+      "team_id": 1044,
+      "team_name": "AFC Bournemouth",
+      "league_code": "PL",
+      "league_name": "Premier League"
+    }
+  }
+}
