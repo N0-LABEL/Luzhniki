@@ -1,7 +1,7 @@
-# bot.py
 import os
 import json
 import asyncio
+import time
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta, timezone
@@ -16,13 +16,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ЛИБО через .env:
-# DISCORD_TOKEN=...
-# FOOTBALL_DATA_TOKEN=...
-# FOOTBALL_DATA_TOKEN = os.getenv("FOOTBALL_DATA_TOKEN")
-
-# Если хочешь временно жёстко вписать токены — раскомментируй строки ниже,
-# но обязательно потом ПЕРЕСОЗДАЙ их и убери из кода.
 DISCORD_TOKEN = ""
 FOOTBALL_DATA_TOKEN = ""
 
@@ -58,6 +51,14 @@ SOUNDS = {
     "match_end":   "sounds/end.mp3",
 }
 
+# Файловый кэш команд
+TEAMS_CACHE_FILE = Path("teams_cache.json")
+TEAMS_CACHE_TTL_HOURS = 12  # обновлять команды не чаще, чем раз в 12 часов
+
+# Кэш live-матчей в памяти (чтобы не спамить API)
+MAX_COMPETITIONS_PER_LIVE_POLL = 4
+LIVE_CACHE_TTL_SECONDS = 60
+
 intents = discord.Intents.default()
 intents.guilds = True
 intents.members = True
@@ -70,6 +71,11 @@ tree = bot.tree
 last_fixtures_state: Dict[int, Dict[str, Any]] = {}
 TEAMS_CACHE: Dict[str, Dict[str, Any]] = {}
 TEAMS_CACHE_BUILT = False
+
+live_cache: Dict[str, Any] = {
+    "timestamp": 0,
+    "fixtures": [],
+}
 
 
 # ---------------------------- УТИЛИТЫ JSON-БД ----------------------------
@@ -137,12 +143,8 @@ def format_match_time(utc_iso: str) -> str:
     во время по Москве (UTC+3) и форматирует как ДД.ММ.ГГГГ ЧЧ:ММ (по МСК).
     """
     try:
-        # парсим время как UTC
         dt_utc = datetime.fromisoformat(utc_iso.replace("Z", "+00:00"))
-
-        # Москва всегда UTC+3, без летнего времени. [web:109]
         dt_msk = dt_utc + timedelta(hours=3)
-
         return dt_msk.strftime("%d.%m.%Y %H:%M") + " (по МСК)"
     except Exception:
         return utc_iso
@@ -157,16 +159,59 @@ def football_headers() -> Dict[str, str]:
     }  # [web:54][web:53]
 
 
+# ---------- КЭШ КОМАНД В ФАЙЛЕ ----------
+
+def load_teams_cache_from_file() -> bool:
+    global TEAMS_CACHE, TEAMS_CACHE_BUILT
+    if not TEAMS_CACHE_FILE.exists():
+        return False
+    try:
+        with TEAMS_CACHE_FILE.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        ts = data.get("_timestamp")
+        if not ts:
+            return False
+        cache_time = datetime.fromisoformat(ts)
+        if datetime.utcnow() - cache_time > timedelta(hours=TEAMS_CACHE_TTL_HOURS):
+            print("[teams_cache] Локальный кэш протух, нужно обновить.")
+            return False
+        TEAMS_CACHE = data.get("teams", {})
+        TEAMS_CACHE_BUILT = True
+        print(f"[teams_cache] Загружен локальный кэш команд: {len(TEAMS_CACHE)}")
+        return True
+    except Exception as e:
+        print(f"[teams_cache] Ошибка чтения локального кэша: {e}")
+        return False
+
+
+def save_teams_cache_to_file():
+    try:
+        data = {
+            "_timestamp": datetime.utcnow().isoformat(),
+            "teams": TEAMS_CACHE,
+        }
+        with TEAMS_CACHE_FILE.open("w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"[teams_cache] Кэш команд сохранён в файл ({len(TEAMS_CACHE)} записей).")
+    except Exception as e:
+        print(f"[teams_cache] Ошибка записи локального кэша: {e}")
+
+
 async def build_teams_cache(session: aiohttp.ClientSession):
     """
     Загружает список команд по всем отслеживаемым турнирам и кладёт в кэш.
-    Учитывает лимит free-плана (10 запросов в минуту). [web:26][web:84]
+    Сначала пробует взять локальный кэш, потом при необходимости ходит в API. [web:54][web:81]
     """
     global TEAMS_CACHE, TEAMS_CACHE_BUILT
 
     if TEAMS_CACHE_BUILT:
         return
 
+    # пробуем из файла
+    if load_teams_cache_from_file():
+        return
+
+    # качаем из API, если файла нет/устарел
     for idx, (code, league_name) in enumerate(COMPETITIONS_TRACKED.items(), start=1):
         url = f"{FOOTBALL_DATA_BASE}/competitions/{code}/teams"
         async with session.get(url, headers=football_headers()) as resp:
@@ -192,18 +237,18 @@ async def build_teams_cache(session: aiohttp.ClientSession):
                 "league_name": league_name,
             }
 
-        # Пауза ~7 секунд между запросами, чтобы не вылетать по лимиту 10 req/min [web:84]
         if idx < len(COMPETITIONS_TRACKED):
             await asyncio.sleep(7)
 
     print(f"[teams_cache] Загружено команд: {len(TEAMS_CACHE)}")
-    TEAMS_CACHE_BUILT = True
+    if TEAMS_CACHE:
+        TEAMS_CACHE_BUILT = True
+        save_teams_cache_to_file()
 
 
 async def search_team(session: aiohttp.ClientSession, query: str) -> Optional[Dict[str, Any]]:
     """
-    Ищет команду по названию среди команд отслеживаемых турниров. [web:54]
-    Использует уже построенный TEAMS_CACHE, не ходит сам в API.
+    Ищет команду по названию среди уже закэшированных команд. [web:54]
     """
     if not TEAMS_CACHE:
         print("[search_team] TEAMS_CACHE пуст — кэш команд ещё не построен или API не вернул данные.")
@@ -211,16 +256,13 @@ async def search_team(session: aiohttp.ClientSession, query: str) -> Optional[Di
 
     q = query.lower().strip()
 
-    # 1) точное совпадение
     if q in TEAMS_CACHE:
         return TEAMS_CACHE[q]
 
-    # 2) совпадение по началу
     for key, info in TEAMS_CACHE.items():
         if key.startswith(q):
             return info
 
-    # 3) совпадение по подстроке
     for key, info in TEAMS_CACHE.items():
         if q in key:
             return info
@@ -228,26 +270,53 @@ async def search_team(session: aiohttp.ClientSession, query: str) -> Optional[Di
     return None
 
 
+# ---------- LIVE-МАТЧИ С КЭШЕМ ----------
 
 async def fetch_live_fixtures(session: aiohttp.ClientSession) -> List[Dict[str, Any]]:
     """
-    Live-матчи по всем отслеживаемым турнирам.
-    /v4/competitions/{code}/matches?status=LIVE [web:51][web:54]
+    Live-матчи + FINISHED за сегодня по части лиг.
+    Использует кэш, чтобы не дёргать API слишком часто. [web:51][web:54]
     """
+    global live_cache
+
+    if time.time() - live_cache.get("timestamp", 0) <= LIVE_CACHE_TTL_SECONDS and live_cache.get("fixtures"):
+        return live_cache["fixtures"]
+
     fixtures: List[Dict[str, Any]] = []
-    for code in COMPETITIONS_TRACKED.keys():
+
+    today = datetime.now(timezone.utc).date()
+    date_from = today.isoformat()
+    date_to = (today + timedelta(days=1)).isoformat()
+
+    for idx, code in enumerate(COMPETITIONS_TRACKED.keys(), start=1):
+        if idx > MAX_COMPETITIONS_PER_LIVE_POLL:
+            break
+
         url = f"{FOOTBALL_DATA_BASE}/competitions/{code}/matches"
-        params = {"status": "LIVE"}
+        params = {
+            "status": "LIVE,FINISHED",
+            "dateFrom": date_from,
+            "dateTo": date_to,
+        }
         async with session.get(url, params=params, headers=football_headers()) as resp:
+            if resp.status == 429:
+                print(f"[live_fixtures] Рейтлимит 429 для {code}")
+                break
             data = await resp.json()
-        fixtures.extend(data.get("matches", []))
+            fixtures.extend(data.get("matches", []))
+
+    print(f"[live_fixtures] Найдено матчей (LIVE+FINISHED): {len(fixtures)}")
+
+    live_cache = {
+        "timestamp": time.time(),
+        "fixtures": fixtures,
+    }
     return fixtures
 
 
 async def fetch_upcoming_fixtures_for_channel(session: aiohttp.ClientSession) -> List[Dict[str, Any]]:
     """
-    Ближайшие матчи по отслеживаемым турнирам за 7 дней.
-    Берём ВСЕ статусы (SCHEDULED, TIMED и т.д.) и уже по дате ограничиваем. [web:51][web:54]
+    Ближайшие матчи по отслеживаемым турнирам за 7 дней. [web:51][web:54]
     """
     fixtures: List[Dict[str, Any]] = []
 
@@ -258,7 +327,6 @@ async def fetch_upcoming_fixtures_for_channel(session: aiohttp.ClientSession) ->
     for code in COMPETITIONS_TRACKED.keys():
         url = f"{FOOTBALL_DATA_BASE}/competitions/{code}/matches"
         params = {
-            # статус НЕ фильтруем, иначе TIMED-матчи пропадают
             "dateFrom": date_from,
             "dateTo": date_to,
         }
@@ -275,12 +343,9 @@ async def fetch_upcoming_fixtures_for_channel(session: aiohttp.ClientSession) ->
 
         fixtures.extend(data.get("matches", []))
 
-    # На всякий случай сортируем по времени
     fixtures.sort(key=lambda m: m.get("utcDate", ""))
-
     print(f"[upcoming] Найдено матчей: {len(fixtures)}")
     return fixtures
-
 
 
 def normalize_league_input(league_name: str) -> Optional[str]:
@@ -412,12 +477,11 @@ async def team_autocomplete(
 ) -> List[app_commands.Choice[str]]:
     """
     Autocomplete по названию команды: ИСПОЛЬЗУЕТ только локальный TEAMS_CACHE,
-    без доп. запросов к API (чтобы не ловить 429). [web:54]
+    без доп. запросов к API. [web:54]
     """
     choices: List[app_commands.Choice[str]] = []
 
     if not TEAMS_CACHE:
-        # Кэш ещё не построен — пока не подсказываем, чтобы не бить API.
         return choices
 
     names_seen = set()
@@ -517,9 +581,7 @@ async def leagues_command(interaction: discord.Interaction):
 @app_commands.describe(team="Название команды (можно часть названия)")
 @app_commands.autocomplete(team=team_autocomplete)
 async def live_subscribe(interaction: discord.Interaction, team: str):
-    # чтобы не ловить Unknown interaction при долгих запросах
     await interaction.response.defer(ephemeral=True)
-
     await play_sound("command")
 
     async with aiohttp.ClientSession() as session:
@@ -752,7 +814,7 @@ async def poll_live_matches():
 
         prev = last_fixtures_state.get(match_id)
 
-        status = m.get("status")  # SCHEDULED, IN_PLAY, PAUSED, FINISHED и т.д. [web:51][web:26]
+        status = m.get("status")
         score = m.get("score", {})
         ft = score.get("fullTime", {}) or {}
         home_goals = ft.get("home") or 0
@@ -850,10 +912,8 @@ async def on_ready():
     await bot.wait_until_ready()
     await bot.change_presence(activity=discord.Game(name="Футбол (football-data.org)"))
 
-    # Подключиться к войс-каналу
     await ensure_voice_connected()
 
-    # Прогреть кэш команд ОДИН РАЗ при запуске
     async with aiohttp.ClientSession() as session:
         await build_teams_cache(session)
 
@@ -863,7 +923,6 @@ async def on_ready():
 
     if not poll_live_matches.is_running():
         poll_live_matches.start()
-
 
 
 if __name__ == "__main__":
