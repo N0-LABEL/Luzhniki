@@ -23,9 +23,9 @@ GUILD_ID = 1225075859333845154          # ID сервера
 TEXT_CHANNEL_ID = 1407445373571563610   # ID текстового канала
 VOICE_CHANNEL_ID = 1289694911234310155  # ID голосового канала
 
-FOOTBALL_DATA_BASE = "https://api.football-data.org/v4"  # v4 API [web:54]
+FOOTBALL_DATA_BASE = "https://api.football-data.org/v4"  # v4 API
 
-# Отслеживаемые турниры (доступные в free-плане) [web:57][web:56]
+# Нужны только для /league-table и /leagues, live/upcoming теперь по командам
 COMPETITIONS_TRACKED: Dict[str, str] = {
     "WC":  "FIFA World Cup",
     "CL":  "UEFA Champions League",
@@ -51,12 +51,9 @@ SOUNDS = {
     "match_end":   "sounds/end.mp3",
 }
 
-# Файловый кэш команд
 TEAMS_CACHE_FILE = Path("teams_cache.json")
-TEAMS_CACHE_TTL_HOURS = 12  # обновлять команды не чаще, чем раз в 12 часов
 
-# Кэш live-матчей в памяти (чтобы не спамить API)
-MAX_COMPETITIONS_PER_LIVE_POLL = 4
+# Кэш live-матчей
 LIVE_CACHE_TTL_SECONDS = 60
 
 intents = discord.Intents.default()
@@ -76,7 +73,6 @@ live_cache: Dict[str, Any] = {
     "timestamp": 0,
     "fixtures": [],
 }
-
 
 # ---------------------------- УТИЛИТЫ JSON-БД ----------------------------
 
@@ -135,13 +131,17 @@ def get_user_subscriptions(user_id: int) -> List[Dict[str, Any]]:
     return db.get("users", {}).get(str(user_id), {}).get("teams", [])
 
 
+def get_all_subscribed_team_ids() -> set[int]:
+    db = load_subscriptions()
+    ids: set[int] = set()
+    for entry in db.get("users", {}).values():
+        for t in entry.get("teams", []):
+            ids.add(t["team_id"])
+    return ids
+
 # ---------------------------- УТИЛИТЫ ВРЕМЕНИ ----------------------------
 
 def format_match_time(utc_iso: str) -> str:
-    """
-    Конвертирует ISO-время UTC (2025-11-24T20:00:00Z)
-    во время по Москве (UTC+3) и форматирует как ДД.ММ.ГГГГ ЧЧ:ММ (по МСК).
-    """
     try:
         dt_utc = datetime.fromisoformat(utc_iso.replace("Z", "+00:00"))
         dt_msk = dt_utc + timedelta(hours=3)
@@ -150,108 +150,81 @@ def format_match_time(utc_iso: str) -> str:
         return utc_iso
 
 
+def match_datetime_msk(utc_iso: str) -> Optional[datetime]:
+    try:
+        dt_utc = datetime.fromisoformat(utc_iso.replace("Z", "+00:00"))
+        return dt_utc + timedelta(hours=3)
+    except Exception:
+        return None
+
+
+def humanize_time_to_match(utc_iso: str) -> str:
+    dt_msk = match_datetime_msk(utc_iso)
+    if dt_msk is None:
+        return "в неизвестное время"
+
+    now_utc = datetime.now(timezone.utc)
+    now_msk = now_utc + timedelta(hours=3)
+
+    delta = dt_msk - now_msk
+    total_sec = int(delta.total_seconds())
+
+    if total_sec < -3600:
+        return "уже прошёл"
+    if total_sec < 0:
+        return "уже идёт"
+
+    days = total_sec // 86400
+    hours = (total_sec % 86400) // 3600
+    minutes = (total_sec % 3600) // 60
+
+    if days == 0 and hours == 0:
+        return f"через {minutes} минут"
+    if days == 0:
+        return f"через {hours} ч {minutes} мин"
+    if days == 1:
+        return f"через {days} день {hours} ч"
+    if 2 <= days <= 4:
+        return f"через {days} дня {hours} ч"
+    return f"через {days} дней {hours} ч"
+
 # ------------------------- РАБОТА С football-data.org --------------------
 
 def football_headers() -> Dict[str, str]:
     return {
         "X-Auth-Token": FOOTBALL_DATA_TOKEN or "",
         "Accept": "application/json",
-    }  # [web:54][web:53]
+    }
 
-
-# ---------- КЭШ КОМАНД В ФАЙЛЕ ----------
-
-def load_teams_cache_from_file() -> bool:
-    global TEAMS_CACHE, TEAMS_CACHE_BUILT
-    if not TEAMS_CACHE_FILE.exists():
-        return False
-    try:
-        with TEAMS_CACHE_FILE.open("r", encoding="utf-8") as f:
-            data = json.load(f)
-        ts = data.get("_timestamp")
-        if not ts:
-            return False
-        cache_time = datetime.fromisoformat(ts)
-        if datetime.utcnow() - cache_time > timedelta(hours=TEAMS_CACHE_TTL_HOURS):
-            print("[teams_cache] Локальный кэш протух, нужно обновить.")
-            return False
-        TEAMS_CACHE = data.get("teams", {})
-        TEAMS_CACHE_BUILT = True
-        print(f"[teams_cache] Загружен локальный кэш команд: {len(TEAMS_CACHE)}")
-        return True
-    except Exception as e:
-        print(f"[teams_cache] Ошибка чтения локального кэша: {e}")
-        return False
-
-
-def save_teams_cache_to_file():
-    try:
-        data = {
-            "_timestamp": datetime.utcnow().isoformat(),
-            "teams": TEAMS_CACHE,
-        }
-        with TEAMS_CACHE_FILE.open("w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        print(f"[teams_cache] Кэш команд сохранён в файл ({len(TEAMS_CACHE)} записей).")
-    except Exception as e:
-        print(f"[teams_cache] Ошибка записи локального кэша: {e}")
-
+# ---------- КЭШ КОМАНД В ФАЙЛЕ (ТОЛЬКО ИЗ ФАЙЛА) ----------
 
 async def build_teams_cache(session: aiohttp.ClientSession):
-    """
-    Загружает список команд по всем отслеживаемым турнирам и кладёт в кэш.
-    Сначала пробует взять локальный кэш, потом при необходимости ходит в API. [web:54][web:81]
-    """
     global TEAMS_CACHE, TEAMS_CACHE_BUILT
 
     if TEAMS_CACHE_BUILT:
         return
 
-    # пробуем из файла
-    if load_teams_cache_from_file():
+    if not TEAMS_CACHE_FILE.exists():
+        print("[teams_cache] Файл teams_cache.json не найден.")
         return
 
-    # качаем из API, если файла нет/устарел
-    for idx, (code, league_name) in enumerate(COMPETITIONS_TRACKED.items(), start=1):
-        url = f"{FOOTBALL_DATA_BASE}/competitions/{code}/teams"
-        async with session.get(url, headers=football_headers()) as resp:
-            data = await resp.json()
-
-        if resp.status == 429:
-            print(f"[teams_cache] Рейтлимит 429 для {code}: {data}")
-            break
-
-        if resp.status != 200:
-            print(f"[teams_cache] Ошибка {resp.status} для {code}: {data}")
-            continue
-
-        for t in data.get("teams", []):
-            name = t.get("name")
-            if not name:
-                continue
-            key = name.lower()
-            TEAMS_CACHE[key] = {
-                "team_id": t["id"],
-                "team_name": name,
-                "league_code": code,
-                "league_name": league_name,
-            }
-
-        if idx < len(COMPETITIONS_TRACKED):
-            await asyncio.sleep(7)
-
-    print(f"[teams_cache] Загружено команд: {len(TEAMS_CACHE)}")
-    if TEAMS_CACHE:
+    try:
+        with TEAMS_CACHE_FILE.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        teams = data.get("teams", {})
+        if not teams:
+            print("[teams_cache] В файле teams_cache.json нет команд.")
+            return
+        TEAMS_CACHE = teams
         TEAMS_CACHE_BUILT = True
-        save_teams_cache_to_file()
+        print(f"[teams_cache] Загружен локальный кэш команд: {len(TEAMS_CACHE)}")
+    except Exception as e:
+        print(f"[teams_cache] Ошибка чтения локального кэша: {e}")
 
 
 async def search_team(session: aiohttp.ClientSession, query: str) -> Optional[Dict[str, Any]]:
-    """
-    Ищет команду по названию среди уже закэшированных команд. [web:54]
-    """
     if not TEAMS_CACHE:
-        print("[search_team] TEAMS_CACHE пуст — кэш команд ещё не построен или API не вернул данные.")
+        print("[search_team] TEAMS_CACHE пуст — кэш команд не загружен.")
         return None
 
     q = query.lower().strip()
@@ -269,139 +242,136 @@ async def search_team(session: aiohttp.ClientSession, query: str) -> Optional[Di
 
     return None
 
+# ---------- ЗАПРОСЫ ПО КОМАНДАМ ----------
 
-# ---------- LIVE-МАТЧИ С КЭШЕМ ----------
+async def fetch_team_matches(
+    session: aiohttp.ClientSession,
+    team_id: int,
+    status: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """
+    /v4/teams/{id}/matches — матчи конкретной команды. [web:51][web:81]
+    """
+    url = f"{FOOTBALL_DATA_BASE}/teams/{team_id}/matches"
+    params: Dict[str, str] = {}
+    if status:
+        params["status"] = status
+    if date_from:
+        params["dateFrom"] = date_from
+    if date_to:
+        params["dateTo"] = date_to
+
+    async with session.get(url, params=params, headers=football_headers()) as resp:
+        try:
+            data = await resp.json()
+        except Exception:
+            data = {}
+
+    if resp.status == 429:
+        print(f"[team_matches] 429 для team_id={team_id}: {data}")
+        return []
+    if resp.status == 403:
+        print(f"[team_matches] 403 (нет доступа) для team_id={team_id}: {data}")
+        return []
+    if resp.status != 200:
+        print(f"[team_matches] Ошибка {resp.status} для team_id={team_id}: {data}")
+        return []
+
+    return data.get("matches", [])
+
+# ---------- LIVE-МАТЧИ ПО ПОДПИСАННЫМ КОМАНДАМ ----------
 
 async def fetch_live_fixtures(session: aiohttp.ClientSession) -> List[Dict[str, Any]]:
     """
-    Live-матчи + FINISHED за сегодня по части лиг.
-    Использует кэш, чтобы не дёргать API слишком часто. [web:51][web:54]
+    Live + свежие FINISHED ТОЛЬКО по командам, на которые кто-то подписан. [web:51]
     """
     global live_cache
 
     if time.time() - live_cache.get("timestamp", 0) <= LIVE_CACHE_TTL_SECONDS and live_cache.get("fixtures"):
         return live_cache["fixtures"]
 
-    fixtures: List[Dict[str, Any]] = []
+    subscribed_team_ids = get_all_subscribed_team_ids()
+    if not subscribed_team_ids:
+        print("[live_fixtures] Нет подписанных команд — live не опрашиваем.")
+        live_cache = {"timestamp": time.time(), "fixtures": []}
+        return []
+
+    fixtures_by_id: Dict[int, Dict[str, Any]] = {}
 
     today = datetime.now(timezone.utc).date()
-    date_from = today.isoformat()
+    date_from = (today - timedelta(days=1)).isoformat()
     date_to = (today + timedelta(days=1)).isoformat()
 
-    for idx, code in enumerate(COMPETITIONS_TRACKED.keys(), start=1):
-        if idx > MAX_COMPETITIONS_PER_LIVE_POLL:
-            break
+    for team_id in subscribed_team_ids:
+        matches = await fetch_team_matches(
+            session,
+            team_id=team_id,
+            status="LIVE,IN_PLAY,PAUSED,FINISHED",
+            date_from=date_from,
+            date_to=date_to,
+        )
+        for m in matches:
+            mid = m["id"]
+            fixtures_by_id[mid] = m  # dedup по матчу
 
-        url = f"{FOOTBALL_DATA_BASE}/competitions/{code}/matches"
-        params = {
-            "status": "LIVE,FINISHED",
-            "dateFrom": date_from,
-            "dateTo": date_to,
-        }
-        async with session.get(url, params=params, headers=football_headers()) as resp:
-            if resp.status == 429:
-                print(f"[live_fixtures] Рейтлимит 429 для {code}")
-                break
-            data = await resp.json()
-            fixtures.extend(data.get("matches", []))
+    fixtures = list(fixtures_by_id.values())
 
-    print(f"[live_fixtures] Найдено матчей (LIVE+FINISHED): {len(fixtures)}")
+    now_utc = datetime.now(timezone.utc)
+    recent: List[Dict[str, Any]] = []
+    for m in fixtures:
+        status = m.get("status", "")
+        if status in ("LIVE", "IN_PLAY", "PAUSED"):
+            recent.append(m)
+        elif status == "FINISHED":
+            try:
+                dt = datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
+                if now_utc - dt < timedelta(hours=4):
+                    recent.append(m)
+            except Exception:
+                pass
+
+    print(f"[live_fixtures] По командам найдено матчей: {len(fixtures)}, использовано: {len(recent)}")
 
     live_cache = {
         "timestamp": time.time(),
-        "fixtures": fixtures,
+        "fixtures": recent,
     }
-    return fixtures
+    return recent
 
+# ---------- UPCOMING ПО ПОДПИСАННЫМ КОМАНДАМ (ПО ПОЛЬЗОВАТЕЛЮ) ----------
 
-async def fetch_upcoming_fixtures_for_channel(session: aiohttp.ClientSession) -> List[Dict[str, Any]]:
+async def fetch_upcoming_for_user(
+    session: aiohttp.ClientSession,
+    user_team_ids: List[int],
+) -> Dict[int, List[Dict[str, Any]]]:
     """
-    Ближайшие матчи по отслеживаемым турнирам за 7 дней. [web:51][web:54]
+    Возвращает словарь team_id -> список SCHEDULED/TIMED матчей на 14 дней вперёд. [web:51]
     """
-    fixtures: List[Dict[str, Any]] = []
-
     today = datetime.now(timezone.utc).date()
     date_from = today.isoformat()
-    date_to = (today + timedelta(days=7)).isoformat()
+    date_to = (today + timedelta(days=14)).isoformat()
 
-    for code in COMPETITIONS_TRACKED.keys():
-        url = f"{FOOTBALL_DATA_BASE}/competitions/{code}/matches"
-        params = {
-            "dateFrom": date_from,
-            "dateTo": date_to,
-        }
-        async with session.get(url, params=params, headers=football_headers()) as resp:
-            data = await resp.json()
+    result: Dict[int, List[Dict[str, Any]]] = {}
 
-        if resp.status == 429:
-            print(f"[upcoming] Рейтлимит 429 для {code}: {data}")
-            break
+    for tid in user_team_ids:
+        matches = await fetch_team_matches(
+            session,
+            team_id=tid,
+            status="SCHEDULED,TIMED",
+            date_from=date_from,
+            date_to=date_to,
+        )
+        # фильтруем только нормальные матчи (где обе команды есть)
+        clean: List[Dict[str, Any]] = []
+        for m in matches:
+            if "homeTeam" in m and "awayTeam" in m and "competition" in m and "utcDate" in m:
+                clean.append(m)
+        if clean:
+            result[tid] = clean
 
-        if resp.status != 200:
-            print(f"[upcoming] Ошибка {resp.status} для {code}: {data}")
-            continue
-
-        fixtures.extend(data.get("matches", []))
-
-    fixtures.sort(key=lambda m: m.get("utcDate", ""))
-    print(f"[upcoming] Найдено матчей: {len(fixtures)}")
-    return fixtures
-
-
-def normalize_league_input(league_name: str) -> Optional[str]:
-    """
-    Приводит ввод пользователя к коду турнира (PL / CL / EC / WC / ...). [web:57]
-    """
-    text = league_name.strip().lower()
-
-    aliases = {
-        "apl": "PL", "апл": "PL", "premier league": "PL", "epl": "PL",
-        "ла лига": "PD", "laliga": "PD", "la liga": "PD",
-        "серия а": "SA", "serie a": "SA",
-        "bundesliga": "BL1", "бундеслига": "BL1",
-        "ligue 1": "FL1", "лига 1": "FL1",
-        "championship": "ELC",
-        "primeira liga": "PPL", "примейра лига": "PPL",
-        "uefa champions league": "CL", "champions league": "CL", "лига чемпионов": "CL",
-        "world cup": "WC", "fifa world cup": "WC", "чм": "WC",
-        "euro": "EC", "european championship": "EC", "чемпионат европы": "EC",
-        "brasileirao": "BSA", "серия а бразилия": "BSA",
-    }
-    if text in aliases:
-        return aliases[text]
-
-    if text.upper() in COMPETITIONS_TRACKED:
-        return text.upper()
-
-    for code, name in COMPETITIONS_TRACKED.items():
-        if text in name.lower():
-            return code
-
-    return None
-
-
-async def fetch_league_table(session: aiohttp.ClientSession, league_name: str) -> Optional[Dict[str, Any]]:
-    """
-    /v4/competitions/{code}/standings [web:55]
-    """
-    code = normalize_league_input(league_name)
-    if not code:
-        return None
-
-    url = f"{FOOTBALL_DATA_BASE}/competitions/{code}/standings"
-    async with session.get(url, headers=football_headers()) as resp:
-        data = await resp.json()
-    if "standings" not in data:
-        return None
-    return data
-
-
-async def fetch_league_streaks(session: aiohttp.ClientSession, league_name: str) -> Optional[List[Dict[str, Any]]]:
-    """
-    Заглушка для /league-streaks (можно собрать из поля 'form' в standings). [web:55][web:68]
-    """
-    return None
-
+    return result
 
 # ----------------------------- ВОЙС И ЗВУК -------------------------------
 
@@ -438,7 +408,6 @@ async def play_sound(kind: str):
     source = discord.FFmpegPCMAudio(path)
     vc.play(source)
 
-
 @bot.event
 async def on_voice_state_update(member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
     if member.id != bot.user.id:
@@ -447,7 +416,6 @@ async def on_voice_state_update(member: discord.Member, before: discord.VoiceSta
     if after.channel is None or (after.channel and after.channel.id != VOICE_CHANNEL_ID):
         await asyncio.sleep(1)
         await ensure_voice_connected()
-
 
 # --------- ДЕКОРАТОР ДЛЯ ОГРАНИЧЕНИЯ КОМАНД ПО КАНАЛУ ---------
 
@@ -468,17 +436,12 @@ def only_in_allowed_channel():
         return True
     return app_commands.check(predicate)
 
-
 # -------------------------- AUTOCOMPLETE ДЛЯ /live -----------------------
 
 async def team_autocomplete(
     interaction: discord.Interaction,
     current: str
 ) -> List[app_commands.Choice[str]]:
-    """
-    Autocomplete по названию команды: ИСПОЛЬЗУЕТ только локальный TEAMS_CACHE,
-    без доп. запросов к API. [web:54]
-    """
     choices: List[app_commands.Choice[str]] = []
 
     if not TEAMS_CACHE:
@@ -506,7 +469,6 @@ async def team_autocomplete(
 
     return choices
 
-
 # ------------------------------- КОМАНДЫ -------------------------------
 
 @tree.command(name="help", description="Показать список команд футбольного бота")
@@ -521,60 +483,25 @@ async def help_command(interaction: discord.Interaction):
     )
     embed.add_field(
         name="/live [команда]",
-        value="Подписаться на уведомления по выбранной команде (поддерживаемые турниры см. /leagues).",
-        inline=False
-    )
-    embed.add_field(
-        name="/live-stop [team_id]",
-        value="Отменить подписку на команду по её ID (см. /live-list).",
-        inline=False
-    )
-    embed.add_field(
-        name="/live-stop-all",
-        value="Снять все твои подписки на команды.",
-        inline=False
-    )
-    embed.add_field(
-        name="/live-list",
-        value="Показать список твоих подписанных команд.",
+        value="Подписаться на уведомления по выбранной команде.",
         inline=False
     )
     embed.add_field(
         name="/live-upcoming",
-        value="Показать ближайшие матчи по поддерживаемым турнирам.",
+        value="Ближайшие матчи по твоим подписанным командам.",
         inline=False
     )
     embed.add_field(
         name="/live-now",
-        value="Показать матчи, которые сейчас идут в поддерживаемых турнирах.",
+        value="Live-матчи по подписанным командам.",
         inline=False
     )
     embed.add_field(
-        name="/league-table [лига]",
-        value="Показать турнирную таблицу турнира (PL, CL, EC, WC, SA, BL1 и т.д.).",
-        inline=False
-    )
-    embed.add_field(
-        name="/leagues",
-        value="Показать список всех доступных турниров для бота.",
+        name="/live-list",
+        value="Список твоих подписанных команд.",
         inline=False
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
-@tree.command(name="leagues", description="Показать список доступных турниров")
-@only_in_allowed_channel()
-async def leagues_command(interaction: discord.Interaction):
-    await play_sound("command")
-
-    lines = [f"`{code}` — {name}" for code, name in COMPETITIONS_TRACKED.items()]
-    embed = discord.Embed(
-        title="📚 Доступные турниры",
-        description="\n".join(lines),
-        colour=discord.Colour.teal()
-    )
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-
 
 @tree.command(name="live", description="Подписаться на команду из поддерживаемых турниров")
 @only_in_allowed_channel()
@@ -589,8 +516,7 @@ async def live_subscribe(interaction: discord.Interaction, team: str):
 
     if not info:
         await interaction.followup.send(
-            "Не удалось найти такую команду среди поддерживаемых турниров. "
-            "Проверь написание названия или посмотри список лиг в /leagues.",
+            "Не удалось найти такую команду среди поддерживаемых турниров.",
             ephemeral=True
         )
         return
@@ -609,7 +535,6 @@ async def live_subscribe(interaction: discord.Interaction, team: str):
         colour=discord.Colour.green()
     )
     await interaction.followup.send(embed=embed, ephemeral=True)
-
 
 @tree.command(name="live-stop", description="Отменить подписку на команду")
 @only_in_allowed_channel()
@@ -630,7 +555,6 @@ async def live_stop(interaction: discord.Interaction, team_id: int):
         ephemeral=True
     )
 
-
 @tree.command(name="live-stop-all", description="Удалить все подписки на команды")
 @only_in_allowed_channel()
 async def live_stop_all(interaction: discord.Interaction):
@@ -642,7 +566,6 @@ async def live_stop_all(interaction: discord.Interaction):
         ephemeral=True
     )
 
-
 @tree.command(name="live-list", description="Показать твои подписанные команды")
 @only_in_allowed_channel()
 async def live_list(interaction: discord.Interaction):
@@ -651,7 +574,7 @@ async def live_list(interaction: discord.Interaction):
     subs = get_user_subscriptions(interaction.user.id)
     if not subs:
         await interaction.response.send_message(
-            "У тебя пока нет подписок на команды. Используй `/live`, чтобы подписаться.",
+            "У тебя пока нет подписок на команды. Используй `/live`.",
             ephemeral=True
         )
         return
@@ -668,39 +591,88 @@ async def live_list(interaction: discord.Interaction):
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
-
-@tree.command(name="live-upcoming", description="Ближайшие матчи по поддерживаемым турнирам")
+@tree.command(name="live-upcoming", description="Ближайшие матчи по твоим подписанным командам")
 @only_in_allowed_channel()
 async def live_upcoming(interaction: discord.Interaction):
     await play_sound("command")
 
-    async with aiohttp.ClientSession() as session:
-        fixtures = await fetch_upcoming_fixtures_for_channel(session)
-
-    if not fixtures:
+    subs = get_user_subscriptions(interaction.user.id)
+    if not subs:
         await interaction.response.send_message(
-            "Сейчас нет ближайших матчей по поддерживаемым турнирам в выбранном интервале.",
+            "У тебя пока нет подписок на команды. Используй `/live`, чтобы подписаться.",
             ephemeral=True
         )
         return
 
-    lines = []
-    for m in fixtures[:10]:
-        league_name = m["competition"]["name"]
-        home = m["homeTeam"]["name"]
-        away = m["awayTeam"]["name"]
-        time_str = format_match_time(m["utcDate"])
-        lines.append(f"**{league_name}** — {home} vs {away} ({time_str})")
+    user_team_ids = [t["team_id"] for t in subs]
+    team_names_by_id = {t["team_id"]: t["team_name"] for t in subs}
+
+    async with aiohttp.ClientSession() as session:
+        team_matches = await fetch_upcoming_for_user(session, user_team_ids)
+
+    if not team_matches:
+        await interaction.response.send_message(
+            "В ближайшие две недели нет матчей для твоих подписанных команд в поддерживаемых лигах.",
+            ephemeral=True
+        )
+        return
+
+    # сортируем команды по ближайшему матчу
+    def parse_utc(m: Dict[str, Any]) -> Optional[datetime]:
+        try:
+            return datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
+        except Exception:
+            return None
+
+    team_order: List[tuple[int, datetime]] = []
+    for tid, ms in team_matches.items():
+        ms_sorted = sorted(ms, key=lambda mm: mm.get("utcDate", ""))
+        first_dt = parse_utc(ms_sorted[0])
+        if first_dt is not None:
+            team_order.append((tid, first_dt))
+
+    if not team_order:
+        await interaction.response.send_message(
+            "Не удалось определить время ближайших матчей для подписанных команд.",
+            ephemeral=True
+        )
+        return
+
+    team_order.sort(key=lambda x: x[1])
+    selected_team_ids = [tid for tid, _ in team_order[:3]]
+
+    lines: List[str] = []
+    MAX_MATCHES_PER_TEAM = 3
+
+    for tid in selected_team_ids:
+        matches = sorted(team_matches[tid], key=lambda m: m.get("utcDate", ""))
+        team_name = team_names_by_id.get(tid, f"Team {tid}")
+
+        lines.append(f"**{team_name}**")
+
+        for m in matches[:MAX_MATCHES_PER_TEAM]:
+            league_name = m["competition"]["name"]
+            home = m["homeTeam"]["name"]
+            away = m["awayTeam"]["name"]
+            utc_iso = m["utcDate"]
+
+            when_str = humanize_time_to_match(utc_iso)
+            lines.append(
+                f"{league_name}: **{home} - {away}** start time: {when_str}"
+            )
+
+        lines.append("")
+
+    description = "\n".join(lines).strip()
 
     embed = discord.Embed(
-        title="📅 Ближайшие матчи",
-        description="\n".join(lines),
+        title="📅 Ближайшие матчи твоих команд",
+        description=description,
         colour=discord.Colour.blue()
     )
-    await interaction.response.send_message(embed=embed)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
-
-@tree.command(name="live-now", description="Матчи, которые сейчас идут")
+@tree.command(name="live-now", description="Матчи, которые сейчас идут по подписанным командам")
 @only_in_allowed_channel()
 async def live_now(interaction: discord.Interaction):
     await play_sound("command")
@@ -710,7 +682,7 @@ async def live_now(interaction: discord.Interaction):
 
     if not fixtures:
         await interaction.response.send_message(
-            "Сейчас нет идущих матчей в поддерживаемых турнирах.",
+            "Сейчас нет идущих матчей для подписанных команд.",
             ephemeral=True
         )
         return
@@ -730,69 +702,18 @@ async def live_now(interaction: discord.Interaction):
         )
 
     embed = discord.Embed(
-        title="📡 Сейчас в эфире",
+        title="📡 Сейчас в эфире (подписанные команды)",
         description="\n".join(lines),
         colour=discord.Colour.green()
     )
-    await interaction.response.send_message(embed=embed)
-
-
-@tree.command(name="league-table", description="Показать турнирную таблицу турнира")
-@only_in_allowed_channel()
-@app_commands.describe(league="Название или код турнира (PL, La Liga, CL, EC, WC и т.п.)")
-async def league_table_cmd(interaction: discord.Interaction, league: str):
-    await play_sound("command")
-
-    async with aiohttp.ClientSession() as session:
-        table = await fetch_league_table(session, league)
-
-    if not table:
-        await interaction.response.send_message(
-            "Не удалось найти такой турнир среди поддерживаемых. Попробуй код вроде PL, CL, EC, WC и т.д.",
-            ephemeral=True
-        )
-        return
-
-    league_name = table["competition"]["name"]
-    standings = table["standings"][0]["table"]
-
-    lines = []
-    for row in standings[:10]:
-        rank = row["position"]
-        team = row["team"]["name"]
-        pts = row["points"]
-        lines.append(f"`{rank:>2}` {team} — {pts} очков")
-
-    embed = discord.Embed(
-        title=f"🏆 Таблица — {league_name}",
-        description="\n".join(lines),
-        colour=discord.Colour.purple()
-    )
-    await interaction.response.send_message(embed=embed)
-
-
-@tree.command(name="league-streaks", description="Серии команд по турниру")
-@only_in_allowed_channel()
-@app_commands.describe(league="Название или код турнира")
-async def league_streaks_cmd(interaction: discord.Interaction, league: str):
-    await play_sound("command")
-
-    async with aiohttp.ClientSession() as session:
-        streaks = await fetch_league_streaks(session, league)
-
-    await interaction.response.send_message(
-        "Пока расчёт серий не реализован. Можно будет собрать их на основе поля `form` в standings.",
-        ephemeral=True
-    )
-
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 # ----------------------- ФОНОВЫЙ ОПРОС LIVE-МАТЧЕЙ ----------------------
 
-@tasks.loop(seconds=90)
+@tasks.loop(seconds=180)
 async def poll_live_matches():
     """
-    Опрос live-матчей: события start/goal/pause/end.
-    Звуки — только если есть хотя бы один подписчик на команды матча. [web:51][web:68]
+    Live-ивенты только по матчам подписанных команд. [web:51]
     """
     await bot.wait_until_ready()
     guild = bot.get_guild(GUILD_ID)
@@ -820,34 +741,22 @@ async def poll_live_matches():
         home_goals = ft.get("home") or 0
         away_goals = ft.get("away") or 0
 
-        # Старт
-        if prev is None and status not in ("SCHEDULED", "POSTPONED", "CANCELLED"):
-            notifications.append(
-                {"type": "start", "match": m, "message": "Матч начался!"}
-            )
+        if prev is None and status not in ("SCHEDULED", "TIMED", "POSTPONED", "CANCELLED"):
+            notifications.append({"type": "start", "match": m, "message": "Матч начался!"})
 
-        # Гол
         if prev is not None:
             prev_score = prev.get("score", {})
             prev_ft = prev_score.get("fullTime", {}) or {}
             prev_home = prev_ft.get("home") or 0
             prev_away = prev_ft.get("away") or 0
             if home_goals != prev_home or away_goals != prev_away:
-                notifications.append(
-                    {"type": "goal", "match": m, "message": "Забит гол!"}
-                )
+                notifications.append({"type": "goal", "match": m, "message": "Забит гол!"})
 
-        # Перерыв
         if status == "PAUSED" and (prev is None or prev.get("status") != "PAUSED"):
-            notifications.append(
-                {"type": "pause", "match": m, "message": "Перерыв в матче."}
-            )
+            notifications.append({"type": "pause", "match": m, "message": "Перерыв в матче."})
 
-        # Конец
         if status == "FINISHED" and (prev is None or prev.get("status") != "FINISHED"):
-            notifications.append(
-                {"type": "end", "match": m, "message": "Матч окончен."}
-            )
+            notifications.append({"type": "end", "match": m, "message": "Матч окончен."})
 
     last_fixtures_state = current_state
 
@@ -903,7 +812,6 @@ async def poll_live_matches():
         if text_channel and text_channel.permissions_for(guild.me).send_messages:
             await text_channel.send(embed=embed)
 
-
 # --------------------------- ЖИЗНЕННЫЙ ЦИКЛ БОТА --------------------------
 
 @bot.event
@@ -924,10 +832,9 @@ async def on_ready():
     if not poll_live_matches.is_running():
         poll_live_matches.start()
 
-
 if __name__ == "__main__":
     if not DISCORD_TOKEN:
-        raise RuntimeError("Не задан DISCORD_TOKEN (переменная окружения).")
+        raise RuntimeError("Не задан DISCORD_TOKEN.")
     if not FOOTBALL_DATA_TOKEN:
-        raise RuntimeError("Не задан FOOTBALL_DATA_TOKEN (токен football-data.org).")
+        raise RuntimeError("Не задан FOOTBALL_DATA_TOKEN.")
     bot.run(DISCORD_TOKEN)
